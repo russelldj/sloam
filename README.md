@@ -74,10 +74,10 @@ The launch file `sloam/launch/sloam.launch` contains the SLOAM parameters that y
 ```
 tmux
 source devel/setup.bash
-roslaunch sloam run_sim.launch # running sloam with sim data
+roslaunch sloam run_CMU.launch # running sloam with CMU data
 ctrl+b % # create new TMUX pannel
 cd ../bags/
-rosbag play example.bag # play bag
+rosbag play <bag from frankensam>.bag # play bag
 ```
 
 ## Odometry Backbone

@@ -2,6 +2,8 @@
 <launch>
     <rosparam file="$(find sloam)/params/sloam_CMU.yaml" command="load" />
     <rosparam file="$(find sloam)/params/velodyne.yaml" command="load" />
+    <!--static tranform-->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="velodyne_frame_transform" args="0 0 0 0 0 0 1 lidar_link velodyne"/>
 
     <include file="$(find sloam)/launch/sloam.launch"></include>
 </launch>

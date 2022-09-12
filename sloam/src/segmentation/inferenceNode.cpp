@@ -38,6 +38,7 @@ SegNode::SegNode(const ros::NodeHandle &nh) : nh_(nh)
 
   std::string cloud_topic;
   nh_.param<std::string>("cloud_topic", cloud_topic, "/os_cloud_node/cloud_undistort");
+  std::cout << "Cloud topic: " << cloud_topic << std::endl;
   cloudSub_ = nh_.subscribe(cloud_topic, 10, &SegNode::SegCb_, this);
 
   treePub_ = nh_.advertise<CloudT>("segmentation/tree", 1);
@@ -103,29 +104,34 @@ Cloud::Ptr SegNode::trellisCloud(const std::vector<std::vector<TreeVertex>> &lan
 
 void SegNode::SegCb_(const sensor_msgs::PointCloud2ConstPtr &cloudMsg)
 {
-
+  std::cout << "In seg CB: " << std::endl;
   if ((prevStamp - cloudMsg->header.stamp).toSec() < 1.0)
     return;
 
   CloudT::Ptr cloud(new CloudT);
   pcl::fromROSMsg(*cloudMsg, *cloud);
   pcl_conversions::toPCL(ros::Time::now(), cloud->header.stamp);
-
+  std::cout << "Creating mask" << std::endl;
   // RUN SEGMENTATION
-  cv::Mat rMask = cv::Mat::zeros(cloudMsg->height, cloudMsg->width, CV_8U);
+  //cv::Mat rMask = cv::Mat::zeros(cloudMsg->height, cloudMsg->width, CV_8U);
+  cv::Mat rMask = cv::Mat::zeros(64, 2048, CV_8U);
+  std::cout << "height: " << cloudMsg->height << ", width: " << cloudMsg->width << std::endl;
+  std::cout << "Running segmentor" << std::endl;
   segmentator_->run(cloud, rMask);
   // cv::imwrite("mask.jpg", rMask);
-
+  std::cout << "Creating ground cloud" << std::endl;
   CloudT::Ptr groundCloud(new CloudT());
   segmentator_->maskCloud(cloud, rMask, groundCloud, 1);
 
+  std::cout << "Creating tree cloud" << std::endl;
   CloudT::Ptr treeCloud(new CloudT);
   segmentator_->maskCloud(cloud, rMask, treeCloud, 255, true);
 
+  std::cout << "Creating landmarks" << std::endl;
   std::vector<std::vector<TreeVertex>> landmarks;
   graphDetector_.computeGraph(cloud, treeCloud, landmarks);
 
-  // std::cout << "SAVING DATA" << std::endl;
+  std::cout << "SAVING DATA" << std::endl;
   // // write class instance to archive
   // std::ofstream ofs("landmarks");
   // boost::archive::text_oarchive oa(ofs);
@@ -139,6 +145,7 @@ void SegNode::SegCb_(const sensor_msgs::PointCloud2ConstPtr &cloudMsg)
   trellis->header = cloud->header;
   treeCloud->header = cloud->header;
   groundCloud->header = cloud->header;
+  std::cout << "Publishing data" << std::endl;
 
   trellisPub_.publish(trellis);
   treePub_.publish(treeCloud);

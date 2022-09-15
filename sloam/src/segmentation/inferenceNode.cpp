@@ -121,14 +121,15 @@ void SegNode::SegCb_(const sensor_msgs::PointCloud2ConstPtr &cloudMsg)
   // cv::imwrite("mask.jpg", rMask);
   std::cout << "Creating ground cloud" << std::endl;
   CloudT::Ptr groundCloud(new CloudT());
-  segmentator_->maskCloud(cloud, rMask, groundCloud, 1);
+  segmentator_->maskCloud(cloud, rMask, groundCloud, 1, false);
 
   std::cout << "Creating tree cloud" << std::endl;
   CloudT::Ptr treeCloud(new CloudT);
-  segmentator_->maskCloud(cloud, rMask, treeCloud, 255, true);
+  segmentator_->maskCloud(cloud, rMask, treeCloud, 255, false);
 
   std::cout << "Creating landmarks" << std::endl;
   std::vector<std::vector<TreeVertex>> landmarks;
+  std::cout << "Init landmarks" << std::endl;
   graphDetector_.computeGraph(cloud, treeCloud, landmarks);
 
   std::cout << "SAVING DATA" << std::endl;

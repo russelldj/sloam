@@ -265,10 +265,10 @@ namespace seg
     assert((mask.rows * mask.cols) == (cloud->width * cloud->height));
     std::cout << "Tested assert" << std::endl;
 
-    for (int i = 0; i < numPoints; i++)
+    for (int i = 0; i < proj_ys.size(); i++)
     {
       size_t proj_idx = proj_ys[i] * _img_w + proj_xs[i];
-      std::cout << proj_idx << std::endl;
+      //std::cout << proj_idx << std::endl;
       unsigned char m = mask.data[proj_idx * sizeof(unsigned char)];
 
       if (m == val)
@@ -287,20 +287,26 @@ namespace seg
     pcl::copyPointCloud(*tempCloud, *outCloud);
     if (dense)
     {
-      std::cout << "Dense" << std::endl;
+      std::cout << "Dense start" << std::endl;
       // destagger. TODO: Do this with mask
       // Adapted from Chao's driver
       if (_do_destagger)
       {
+        std::cout << "destager start" << std::endl;
         _destaggerCloud(tempCloud, outCloud);
+        std::cout << "destager end" << std::endl;
       }
       else
       {
+        std::cout << "about to assign" << std::endl;
         outCloud = tempCloud;
+        std::cout << "asigned" << std::endl;
       }
+      std::cout << "Dense middle" << std::endl;
       outCloud->width = _img_w;
       outCloud->height = _img_h;
       outCloud->is_dense = true;
+      std::cout << "Dense done" << std::endl;
     }
     else
     {
@@ -308,6 +314,7 @@ namespace seg
       outCloud->width = outCloud->points.size();
       outCloud->height = 1;
       outCloud->is_dense = false;
+      std::cout << "Not dense done" << std::endl;
     }
 
     // outCloud->header = cloud->header;
@@ -441,16 +448,18 @@ namespace seg
       std::cout << "Projecting data" << std::endl;
       _timer.tic();
     }
+    std::cout << "width: " << cloud->width << ", height: " << cloud->height << std::endl;
+    0/0;
     auto netInput = _doProjection(cloudVector, cloud->width * cloud->height);
-    // int dims[] = {64,2048};
-    // std::vector<float> flattened_inp;
-    // for (int i = 0; i < _img_h*_img_w; ++i) {
-    //   size_t proj_idx = proj_ys[i] * _img_w + proj_xs[i];
-    //   flattened_inp.push_back(netInput[proj_idx][0]);
-    // }
-    // cv::Mat result = cv::Mat(2, dims, CV_32F, flattened_inp.data());
-    // cv::FileStorage file("/opt/bags/inf/inp.ext", cv::FileStorage::WRITE);
-    // file << "mat" << result;
+    //int dims[] = {64,2048};
+    //std::vector<float> flattened_inp;
+    //for (int i = 0; i < _img_h*_img_w; ++i) {
+    //  size_t proj_idx = proj_ys[i] * _img_w + proj_xs[i];
+    //  flattened_inp.push_back(netInput[proj_idx][0]);
+    //}
+    //cv::Mat result = cv::Mat(2, dims, CV_32F, flattened_inp.data());
+    //cv::FileStorage file("/opt/bags/inf/inp.ext", cv::FileStorage::WRITE);
+    //file << "mat" << result;
 
     if (_verbose)
     {
